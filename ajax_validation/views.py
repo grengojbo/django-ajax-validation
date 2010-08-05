@@ -67,8 +67,13 @@ def validate(request, *args, **kwargs):
             formfields = dict([(fieldname, form[fieldname]) for fieldname in form.fields.keys()])
 
         # if fields have been specified then restrict the error list
-        if request.POST.getlist('fields'):
-            fields = request.POST.getlist('fields') + ['__all__']
+		# jquery 1.3.2 sends fields as &fields=
+		# jquery 1.4.2 sends fields as &fields%5b%5d=, so we have to check for both to make sure we actually abide by the fields passed in.
+        fields = request.POST.getlist('fields')# Support jquery 1.3.2
+        if not fields:
+            fields = request.POST.getlist('fields[]')# Support jquery 1.4.2
+        if fields:
+            fields = fields + ['__all__']
             errors = dict([(key, val) for key, val in errors.iteritems() if key in fields])
 
         final_errors = {}

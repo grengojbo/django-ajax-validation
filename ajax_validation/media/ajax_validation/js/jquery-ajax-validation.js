@@ -96,7 +96,7 @@
                                 if (settings.ifSuccess)
                                     settings.ifSuccess(form);
                             }
-                          }
+                        }
                     },
                     type: 'POST',
                     url: url

@@ -10,7 +10,8 @@
             fields: false,
             dom: this,
             event: 'submit',
-            submitHandler: null
+            submitHandler: null,
+            ifSuccess: null
         }, settings);
 
         return this.each(function() {
@@ -87,7 +88,15 @@
                                     });
                                 }
                             }
-                        }
+                        } else {
+                            // Remove any remaining errors
+                            form.find('ul.errorlist').remove();
+                            
+                            if (form.find('ul.errorlist').size() == 0) {
+                                if (settings.ifSuccess)
+                                    settings.ifSuccess(form);
+                            }
+                          }
                     },
                     type: 'POST',
                     url: url

@@ -22,7 +22,7 @@ def validate(request, *args, **kwargs):
     if form.is_valid():
         # Conditionally save the post data for later use
         if save_session == True:
-          request.session[form.__class__.__name__] = request.POST
+            request.session[form.__class__.__name__] = request.POST
         
         data = {
             'valid': True,

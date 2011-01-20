@@ -6,8 +6,8 @@ from django.forms.formsets import BaseFormSet
 from ajax_validation.utils import LazyEncoder
 
 def validate(request, *args, **kwargs):
-    if 'save_session' in kwargs and kwargs['save_session'] == True:
-        save_session = True
+    if 'save_session' in kwargs:
+        save_session = kwargs['save_session']
     else:
         save_session = False
     
@@ -21,8 +21,17 @@ def validate(request, *args, **kwargs):
     form = form_class(**defaults)
     if form.is_valid():
         # Conditionally save the post data for later use
-        if save_session == True:
-            request.session[form.__class__.__name__] = request.POST
+        if save_session:
+            # Save in simple dict if no session key given
+            if type(save_session) == type(bool()):
+                request.session[form.__class__.__name__] = request.POST
+            # Save in specified session key
+            else:
+                if not save_session in request.session:
+                    request.session[save_session] = dict()
+                request.session[save_session][form.__class__.__name__] = request.POST
+            # Make sure the updated session gets saved
+            request.session.modified = True
         
         data = {
             'valid': True,

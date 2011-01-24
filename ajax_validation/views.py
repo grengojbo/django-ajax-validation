@@ -24,12 +24,12 @@ def validate(request, *args, **kwargs):
         if save_session:
             # Save in simple dict if no session key given
             if type(save_session) == type(bool()):
-                request.session[form.__class__.__name__] = request.POST
+                request.session[form.__class__.__name__] = form.cleaned_data
             # Save in specified session key
             else:
                 if not save_session in request.session:
                     request.session[save_session] = dict()
-                request.session[save_session][form.__class__.__name__] = request.POST
+                request.session[save_session][form.__class__.__name__] = form.cleaned_data
             # Make sure the updated session gets saved
             request.session.modified = True
         

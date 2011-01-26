@@ -10,8 +10,13 @@
             fields: false,
             dom: this,
             event: 'submit',
+            form_filter: {
+              '__all__': function(form, key) {return inputs(form).filter(':first').parent()},
+              '*': function(form, key) {return inputs(form).filter(':first[id^=id_' + key.replace('__all__', '') + ']').parent()}
+            },
             submitHandler: null,
-            ifSuccess: null
+            ifSuccess: null,
+            ifError: null
         }, settings);
 
         return this.each(function() {
@@ -39,12 +44,12 @@
                             else    {
                                 var get_form_error_position = function(key) {
                                     key = key || '__all__';
-                                    if (key == '__all__') {
-                                        var filter = ':first';
+                                    if (key in settings.form_filter) {
+                                      $e = settings.form_filter[key](form, key);
                                     } else {
-                                        var filter = ':first[id^=id_' + key.replace('__all__', '') + ']';
+                                      $e = settings.form_filter['*'](form, key);
                                     }
-                                    return inputs(form).filter(filter).parent();
+                                    return $e;
                                 };
                                 if (settings.type == 'p')    {
                                     form.find('ul.errorlist').remove();
@@ -52,7 +57,7 @@
                                         if (key.indexOf('__all__') >= 0)   {
                                             var error = get_form_error_position(key);
                                             if (error.prev().is('ul.errorlist')) {
-                                                error.prev().before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                                                error.prev().before('<ul class="errorlist all"><li>' + val + '</li></ul>');
                                             }
                                             else    {
                                                 error.before('<ul class="errorlist"><li>' + val + '</li></ul>');
@@ -68,7 +73,7 @@
                                     form.find('tr:has(ul.errorlist)').remove();
                                     $.each(data.errors, function(key, val)  {
                                         if (key.indexOf('__all__') >= 0)   {
-                                            get_form_error_position(key).parent().before('<tr><td colspan="2"><ul class="errorlist"><li>' + val + '.</li></ul></td></tr>');
+                                            get_form_error_position(key).parent().before('<tr><td colspan="2"><ul class="errorlist all"><li>' + val + '.</li></ul></td></tr>');
                                         }
                                         else    {
                                             $('#' + key).before('<ul class="errorlist"><li>' + val + '</li></ul>');
@@ -80,21 +85,35 @@
                                     form.find('li:has(ul.errorlist)').remove();
                                     $.each(data.errors, function(key, val)  {
                                         if (key.indexOf('__all__') >= 0)   {
-                                            get_form_error_position(key).before('<li><ul class="errorlist"><li>' + val + '</li></ul></li>');
+                                            get_form_error_position(key).before('<li><ul class="errorlist all"><li>' + val + '</li></ul></li>');
                                         }
                                         else    {
                                             $('#' + key).prev().before('<ul class="errorlist"><li>' + val + '</li></ul>');
                                         }
                                     });
                                 }
+                                if (settings.type == 'inline') {
+                                    form.find('ul.errorlist').remove();
+                                    $.each(data.errors, function(key, val)  {
+                                        if (key.indexOf('__all__') >= 0)   {
+                                            get_form_error_position(key).before('<ul class="errorlist all"><li>' + val + '</li></ul>');
+                                        }
+                                        else    {
+                                            $('#' + key).before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                                        }
+                                    });
+                                }
                             }
+                            
+                            if (settings.ifError)
+                                settings.ifError(form, data);
                         } else {
                             // Remove any remaining errors
                             form.find('ul.errorlist').remove();
                             
                             if (form.find('ul.errorlist').size() == 0) {
                                 if (settings.ifSuccess)
-                                    settings.ifSuccess(form);
+                                    settings.ifSuccess(form, data);
                             }
                         }
                     },

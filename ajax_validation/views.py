@@ -16,9 +16,15 @@ def validate(request, *args, **kwargs):
     else:
         return_form_data = False
     
+    if 'prefix' in kwargs:
+        prefix = kwargs['prefix']
+    else:
+        prefix = None
+    
     form_class = kwargs.pop('form_class')
     defaults = {
-        'data': request.POST
+        'data': request.POST,
+        'prefix': prefix,
     }
     extra_args_func = kwargs.pop('callback', lambda request, *args, **kwargs: {})
     kwargs = extra_args_func(request, *args, **kwargs)
